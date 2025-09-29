@@ -23,10 +23,15 @@ class Task1(luigi.Task):
         return luigi.LocalTarget("luigi_output1.txt")
 
     def run(self):
-        with self.input().open("r") as infile:
+        with self.input().open("r") as infile, self.output().open("w") as outfile:
             data = infile.read()
-        with self.output().open("w") as outfile:
             outfile.write(data + "\nTask1 completed.")
+            
+            
+            
+            
 
 if __name__ == "__main__":
     luigi.run(['Task1', '--local-scheduler'])
+    
+    
