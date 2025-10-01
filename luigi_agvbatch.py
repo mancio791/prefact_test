@@ -130,10 +130,11 @@ class ExecutionConfiguration(luigi.Task):
 
 class ExecuteRemoteShellCommand(luigi.Task):
     job_id = luigi.Parameter()
-    redis_key = luigi.Parameter()
+    redis_command_key = luigi.Parameter()
+    remote_config_key = luigi.Parameter()
     
     def requires(self):
-        return ExecutionConfiguration(redis_task_key=self.redis_key, remote_config_key="agevolo_batch_pd_connection", 
+        return ExecutionConfiguration(redis_task_key=self.redis_command_key, remote_config_key=self.remote_config_key, 
                                       job_id=self.job_id)
     
     def output(self):
@@ -192,20 +193,32 @@ class ExecuteRemoteShellCommand(luigi.Task):
 
 def createSchedule(redisCommandKey):
     from apscheduler.schedulers.background import BackgroundScheduler
+    import time
     
     try:
         scheduler = BackgroundScheduler()
         
         def job(jobid):
-            return luigi.build([ExecuteRemoteShellCommand(redis_key=redisCommandKey,job_id=jobid)], local_scheduler=True)
+            return luigi.build([ExecuteRemoteShellCommand(
+                                    redis_command_key=redisCommandKey,job_id=jobid, 
+                                    remote_config_key="agevolo_batch_pd_connection")
+                                ], local_scheduler=True)
 
         jobid = f'jobid_{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
         scheduler.add_job(job, kwargs={'jobid': jobid}, id=jobid)
         scheduler.start()
+        print("Scheduler ON")
+        
+        # Diamo tempo allo schedulatore di avviare il job poi termino il metodo
+        print("Attendo 3 secondi prima di terminare lo scheduler")
+        time.sleep(3)
     except (KeyboardInterrupt, SystemExit):
         print("Manual interruption")
-    # finally:
-    #     scheduler.shutdown()
+    else:
+        print("GGGGOOOOAAAALLLL !!")
+    finally:
+        scheduler.shutdown()
+        print("Scheduler OFF")
 
 
 
@@ -213,5 +226,5 @@ def createSchedule(redisCommandKey):
 
 
 if __name__ == "__main__":
-    createSchedule("agevolo_mctrent_feabatchtest")
+    createSchedule("agevolo_mtt_test")
     
