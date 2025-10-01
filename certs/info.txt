@@ -1,3 +1,0 @@
-Certificate generated at certs/certificate.pem
-Key generated at certs/private.key
-Command executed: openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj '/C=IT/ST=Italy/L=Perugia/O=deda.credit/OU=IT/CN=deda.com/emailAddress=info@deda.com' -keyout certs/private.key -out certs/certificate.pem

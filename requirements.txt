@@ -2,3 +2,4 @@ prefect
 apscheduler
 luigi
 redis
+paramiko
