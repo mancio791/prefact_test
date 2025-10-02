@@ -5,9 +5,17 @@ import paramiko
 import json
 import os
 import io
+import uuid
 
 
-
+class RedisConfig(luigi.Config):
+    host = luigi.Parameter()
+    port = luigi.IntParameter(default=6379)
+    db = luigi.IntParameter()
+    password = luigi.Parameter()
+    username = luigi.Parameter()
+    
+    
 
 class Connection:
     def __init__(self, host, port):
@@ -37,13 +45,12 @@ class KeyPairConnection(UsernamePasswordConnection):
     def privateKey(self):
         del self._privateKey
 
-
-
 class RedisConnection(UsernamePasswordConnection):
-    def __init__(self, host, port, username=None, password=None, database=0):
-        super().__init__(host, port, username, password)
-        self.database = database
-        
+    def __init__(self, redisConfig: RedisConfig):
+        super().__init__(redisConfig.host, redisConfig.port, redisConfig.username, redisConfig.password)
+        self.database = redisConfig.db
+    
+    
     def open(self):
         self._connection =  redis.Redis(host=self.host, port=self.port, db=self.database, 
                                         decode_responses=True, password=self.password)
@@ -69,40 +76,25 @@ class RedisConnection(UsernamePasswordConnection):
 
 
 
-
-
-
-
-
-
-
 class ExecutionConfiguration(luigi.Task):
     job_id = luigi.Parameter()
-    
-    #----- lette da cfg
-    redis_host = luigi.Parameter()
-    redis_port = luigi.IntParameter(default=6379)
-    redis_db = luigi.IntParameter()
-    redis_password = luigi.Parameter()
-    #----- lette da cfg
-    
     redis_task_key = luigi.Parameter() # key redis per recuperare il comando da eseguire
     remote_config_key = luigi.Parameter() # key redis per recuperare le info di connessione ssh al server remoto
 
+    uniqueId = str(uuid.uuid4())
     
     def output(self):
-        return luigi.LocalTarget(f"temp/exec_context_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.json")
+        return luigi.LocalTarget(f"temp/exec_context_{self.uniqueId}.json")
     
     def run(self):
         try:
-            rc = RedisConnection(host=self.redis_host, port=self.redis_port, database=self.redis_db, 
-                                password=self.redis_password)
+            redis_config = RedisConfig()
+            rc = RedisConnection(redis_config)
             r = rc.open()
             # registrazione esecuzione job
             hash_name = "scheduler_registry"
-            field_key = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-            r.hset(hash_name, field_key, self.job_id)
-            r.hexpire(hash_name, 180, field_key)
+            r.hset(hash_name, self.uniqueId, f"[JOB] {self.job_id}")
+            r.hexpire(hash_name, 180, self.uniqueId)
             
             # recupero configurazione connessione remote host
             remote_config = r.hgetall(self.remote_config_key)
@@ -133,8 +125,10 @@ class ExecuteRemoteShellCommand(luigi.Task):
     redis_command_key = luigi.Parameter()
     remote_config_key = luigi.Parameter()
     
+    
     def requires(self):
-        return ExecutionConfiguration(redis_task_key=self.redis_command_key, remote_config_key=self.remote_config_key, 
+        return ExecutionConfiguration(redis_task_key=self.redis_command_key, 
+                                      remote_config_key=self.remote_config_key, 
                                       job_id=self.job_id)
     
     def output(self):
@@ -183,6 +177,31 @@ class ExecuteRemoteShellCommand(luigi.Task):
 
 
 
+@luigi.Task.event_handler(luigi.Event.SUCCESS)
+def task_callback(task:luigi.Task):
+    # print(f"-+-+-+-+-+-+- Task {task.task_id} completed !")
+    redis_config = RedisConfig()
+    try:
+        rc = RedisConnection(redis_config)
+        r = rc.open()
+        # registrazione esecuzione job
+        hash_name = "scheduler_registry"
+        field_key = str(uuid.uuid4())  
+        r.hset(hash_name, field_key, f"[TASK] ({task.to_str_params()['job_id']}) {task.task_id} [SUCCESS]")
+        r.hexpire(hash_name, 180, field_key)
+    except Exception as e:
+        print(f"Error: {e}")
+    finally:
+        rc.close()
+    
+
+
+
+
+
+
+
+
 
 
 
@@ -204,14 +223,14 @@ def createSchedule(redisCommandKey):
                                     remote_config_key="agevolo_batch_pd_connection")
                                 ], local_scheduler=True)
 
-        jobid = f'jobid_{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+        jobid = f'jobid_{uuid.uuid4()}'
         scheduler.add_job(job, kwargs={'jobid': jobid}, id=jobid)
         scheduler.start()
         print("Scheduler ON")
         
         # Diamo tempo allo schedulatore di avviare il job poi termino il metodo
-        print("Attendo 3 secondi prima di terminare lo scheduler")
-        time.sleep(3)
+        print("Attendo 5 secondi prima di terminare lo scheduler")
+        time.sleep(5)
     except (KeyboardInterrupt, SystemExit):
         print("Manual interruption")
     else:
