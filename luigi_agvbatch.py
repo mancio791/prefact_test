@@ -60,16 +60,6 @@ class RedisConnection(UsernamePasswordConnection):
         self._connection.close()
 
 
-    
-
-
-
-
-
-
-
-
-
 
 
 
@@ -111,14 +101,6 @@ class ExecutionConfiguration(luigi.Task):
             print(f"Error: {e}")
         finally:
             rc.close()
-            
-            
-            
-            
-            
-            
-            
-            
 
 class ExecuteRemoteShellCommand(luigi.Task):
     job_id = luigi.Parameter()
@@ -173,10 +155,6 @@ class ExecuteRemoteShellCommand(luigi.Task):
         for m in stdout.readlines():
             yield m.rstrip()
 
-
-
-
-
 @luigi.Task.event_handler(luigi.Event.SUCCESS)
 def task_callback(task:luigi.Task):
     # print(f"-+-+-+-+-+-+- Task {task.task_id} completed !")
@@ -210,7 +188,7 @@ def task_callback(task:luigi.Task):
 
 
 
-def createSchedule(redisCommandKey):
+def createSchedule(what, where):
     from apscheduler.schedulers.background import BackgroundScheduler
     import time
     
@@ -219,8 +197,8 @@ def createSchedule(redisCommandKey):
         
         def job(jobid):
             return luigi.build([ExecuteRemoteShellCommand(
-                                    redis_command_key=redisCommandKey,job_id=jobid, 
-                                    remote_config_key="agevolo_batch_pd_connection")
+                                    redis_command_key=what,job_id=jobid, 
+                                    remote_config_key=where)
                                 ], local_scheduler=True)
 
         jobid = f'jobid_{uuid.uuid4()}'
@@ -245,5 +223,5 @@ def createSchedule(redisCommandKey):
 
 
 if __name__ == "__main__":
-    createSchedule("agevolo_mtt_test")
+    createSchedule("agevolo_mtt_test","agevolo_batch_pd_connection")
     
