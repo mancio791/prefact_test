@@ -45,11 +45,6 @@ def createSchedule(taskconfigkeys):
         print("New job added to scheduler", jobid)
         
         scheduler.start()                
-        # scheduler.start(True)
-        # print("Scheduler PAUSED")
-        # time.sleep(2)
-        # scheduler.resume()
-        # print("Scheduler RESUMED")
         
         # Simulo il runtime period dello scheduler in una finestra di x secondi
         print("Attendo 30 secondi prima di terminare lo scheduler")
@@ -101,8 +96,9 @@ def saveTasks(taskconfigfiles):
 
 
 if __name__ == "__main__":
+    # avvia lo schedulatore
     createSchedule(["task_config_r"])
     
-    
-    #saveTasks(["task_config_w.json","task_config_r.json"])
+    # salva le confgurazione dei task in redis    
+    # saveTasks(["task_config_w.json","task_config_r.json"])
     
