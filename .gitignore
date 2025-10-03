@@ -147,3 +147,5 @@ htmlcov/
 *.sqlite3
 
 # End of file
+
+temp/

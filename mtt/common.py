@@ -106,6 +106,15 @@ class TaskConfig:
 
     @cmd.deleter
     def cmd(self): del self._cmd
+    
+    @property
+    def type(self): return self._type
+
+    @type.setter
+    def type(self, value): self._type = value
+
+    @type.deleter
+    def type(self): del self._type
 
     
     def load(self) -> bool:
@@ -117,6 +126,7 @@ class TaskConfig:
             self.description = htc['description']
             self.connection = htc['connection']
             self.cmd = htc['cmd']
+            self.type = htc['type']
             
         except Exception as e:
             print("Error", e)
@@ -125,4 +135,7 @@ class TaskConfig:
             return True
         finally:
             rc.close()
+
+
+
 

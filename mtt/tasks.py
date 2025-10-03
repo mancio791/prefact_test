@@ -121,10 +121,11 @@ class ExecuteRemoteShellReadCommandTask(luigi.Task):
     task_deps = [] # me ne apsetto 1
             
     def requires(self):
-        task = ExecuteRemoteShellWriteCommandTask(job_id=self.job_id)
-        task_config = TaskConfig(self.task_deps[0])
-        task_config.load()
-        task.task_config = task_config
+        # task = ExecuteRemoteShellWriteCommandTask(job_id=self.job_id)
+        tc = TaskConfig(self.task_deps[0])
+        tc.load()
+        task = generateInstance(tc.type, job_id=self.job_id)
+        task.task_config = tc
         return task
     
     def output(self):
@@ -193,3 +194,7 @@ def task_callback(task:luigi.Task):
         rc.close()
     
 
+def generateInstance(classname, **kwargs):
+    c = globals()[classname]
+    i = c(**kwargs)
+    return i

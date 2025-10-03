@@ -1,5 +1,6 @@
 {
     "description": "Test lettura filesystem",
     "connection": "agevolo_batch_pd_connection",
-    "cmd": "find /tmp -type f -name *.mtt"
+    "cmd": "ls -l /tmp",
+    "type": "ExecuteRemoteShellReadCommandTask"
 }

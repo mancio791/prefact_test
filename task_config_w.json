@@ -1,5 +1,6 @@
 {
     "description": "Test scrittura filesystem",
     "connection": "agevolo_batch_pd_connection",
-    "cmd": "echo 'Prpva funzionamento task e redis' | tee /tmp/scheduler.mtt"
+    "cmd": "touch /tmp/scheduler_luigi.mtt",
+    "type": "ExecuteRemoteShellWriteCommandTask"
 }

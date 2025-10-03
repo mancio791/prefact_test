@@ -4,7 +4,7 @@ import os
 import uuid
 
 from mtt.common import TaskConfig, RedisConfig, RedisConnection
-from mtt.tasks import ExecuteRemoteShellReadCommandTask
+from mtt.tasks import ExecuteRemoteShellReadCommandTask, generateInstance
 
 
 
@@ -33,7 +33,7 @@ def createSchedule(taskconfigkeys):
             # creazione task
             tc = TaskConfig(taskconfigkeys[0])
             tc.load()
-            task = ExecuteRemoteShellReadCommandTask(job_id=jobid)
+            task = generateInstance(tc.type, job_id=jobid)
             task.task_config = tc
             task.task_deps.append('task_config_w')
             # esecuzione task
@@ -105,5 +105,5 @@ if __name__ == "__main__":
     createSchedule(["task_config_r"])
     
     
-    # saveTasks(["task_config_w","task_config_r"])
+    #saveTasks(["task_config_w.json","task_config_r.json"])
     
