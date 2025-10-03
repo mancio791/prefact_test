@@ -35,7 +35,6 @@ def createSchedule(taskconfigkeys):
             tc.load()
             task = generateInstance(tc.type, job_id=jobid)
             task.task_config = tc
-            task.task_deps.append('task_config_w')
             # esecuzione task
             return luigi.build([task], local_scheduler=True)
                 

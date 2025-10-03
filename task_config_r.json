@@ -2,5 +2,6 @@
     "description": "Test lettura filesystem",
     "connection": "agevolo_batch_pd_connection",
     "cmd": "ls -l /tmp",
-    "type": "ExecuteRemoteShellReadCommandTask"
+    "type": "ExecuteRemoteShellReadCommandTask",
+    "dependsOn": "task_config_w"
 }

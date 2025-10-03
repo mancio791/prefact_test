@@ -115,6 +115,16 @@ class TaskConfig:
 
     @type.deleter
     def type(self): del self._type
+    
+    @property
+    def dependsOn(self): return self._dependsOn
+
+    @dependsOn.setter
+    def dependsOn(self, value): self._dependsOn = value
+
+    @dependsOn.deleter
+    def dependsOn(self): del self._dependsOn
+    
 
     
     def load(self) -> bool:
@@ -127,6 +137,7 @@ class TaskConfig:
             self.connection = htc['connection']
             self.cmd = htc['cmd']
             self.type = htc['type']
+            self.dependsOn = htc['dependsOn']
             
         except Exception as e:
             print("Error", e)

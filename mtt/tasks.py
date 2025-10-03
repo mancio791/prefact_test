@@ -16,8 +16,6 @@ class ExecutionConfigurationTask(luigi.Task):
     
     job_id = luigi.Parameter()
     
-    # task_config = TaskConfig
-
     # uuid identificativo riferimenti configurazione
     uniqueId = str(uuid.uuid4())
     
@@ -34,14 +32,6 @@ class ExecutionConfigurationTask(luigi.Task):
             hash_name = "scheduler_registry"
             r.hset(hash_name, self.uniqueId, f"[JOB] {self.job_id}")
             r.hexpire(hash_name, 180, self.uniqueId)
-            
-            # # recupero configurazione connessione remote host
-            # remote_config = r.hgetall(self.task_config.connection)
-            # # recupero comando da eseguire
-            # data_ = dict()
-            # data_["cmd"] = self.task_config.cmd
-            # data_["remote"] = remote_config
-
         except Exception as e:
             print(f"Error: {e}")
         else:
@@ -59,7 +49,6 @@ class ExecuteRemoteShellWriteCommandTask(luigi.Task):
     job_id = luigi.Parameter()
     
     task_config = TaskConfig
-    task_deps = [] # me ne apsetto 1
     
     def requires(self):
         task = ExecutionConfigurationTask(job_id=self.job_id)
@@ -118,11 +107,10 @@ class ExecuteRemoteShellReadCommandTask(luigi.Task):
     job_id = luigi.Parameter()
     
     task_config = TaskConfig
-    task_deps = [] # me ne apsetto 1
             
     def requires(self):
         # task = ExecuteRemoteShellWriteCommandTask(job_id=self.job_id)
-        tc = TaskConfig(self.task_deps[0])
+        tc = TaskConfig(self.task_config.dependsOn)
         tc.load()
         task = generateInstance(tc.type, job_id=self.job_id)
         task.task_config = tc
