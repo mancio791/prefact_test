@@ -150,7 +150,7 @@ class TaskConfig:
 class KeyStrategy(ABC):
     
     @abstractmethod
-    def getKey(private_key) -> PKey:
+    def getKey(self, private_key) -> PKey:
         pass
 
 class RSAKeyStrategy(KeyStrategy):    
