@@ -85,8 +85,6 @@ class TaskConfig:
     @name.setter
     def name(self, value): self._name = value
 
-    @name.deleter
-    def name(self): del self._name
     
     @property
     def description(self): return self._description
@@ -94,8 +92,6 @@ class TaskConfig:
     @description.setter
     def description(self, value): self._description = value
 
-    @description.deleter
-    def description(self): del self._description
     
     @property
     def connection(self): return self._connection
@@ -103,8 +99,6 @@ class TaskConfig:
     @connection.setter
     def connection(self, value): self._connection = value
 
-    @connection.deleter
-    def connection(self): del self._connection
     
     @property
     def cmd(self): return self._cmd
@@ -112,8 +106,6 @@ class TaskConfig:
     @cmd.setter
     def cmd(self, value): self._cmd = value
 
-    @cmd.deleter
-    def cmd(self): del self._cmd
     
     @property
     def type(self): return self._type
@@ -121,8 +113,6 @@ class TaskConfig:
     @type.setter
     def type(self, value): self._type = value
 
-    @type.deleter
-    def type(self): del self._type
     
     @property
     def dependsOn(self): return self._dependsOn
@@ -130,8 +120,6 @@ class TaskConfig:
     @dependsOn.setter
     def dependsOn(self, value): self._dependsOn = value
 
-    @dependsOn.deleter
-    def dependsOn(self): del self._dependsOn
     
 
     
@@ -159,6 +147,9 @@ class TaskConfig:
 
 
 
+#
+# https://refactoring.guru/design-patterns/strategy/python/example
+
 
 class KeyStrategy(ABC):
     
@@ -166,13 +157,11 @@ class KeyStrategy(ABC):
     def getKey(private_key) -> PKey:
         pass
 
-class RSAKeyStrategy(KeyStrategy):
-    
+class RSAKeyStrategy(KeyStrategy):    
     def getKey(self, private_key) -> PKey:
         return RSAKey.from_private_key(private_key)
 
 class ED25519KeyStrategy(KeyStrategy):
-    
     def getKey(self, private_key) -> PKey:
         return Ed25519Key.from_private_key(private_key)
 
