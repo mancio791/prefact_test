@@ -47,8 +47,9 @@ def createSchedule(taskconfigkeys):
         scheduler.start()                
         
         # Simulo il runtime period dello scheduler in una finestra di x secondi
-        print("Attendo 30 secondi prima di terminare lo scheduler")
-        time.sleep(30)
+        secs = 10
+        print("Attendo %d secondi prima di terminare lo scheduler" % secs)
+        time.sleep(secs)
     except (KeyboardInterrupt, SystemExit):
         print("Manual interruption")
     else:

@@ -51,10 +51,6 @@ class KeyPairConnection(UsernamePasswordConnection):
         self._keyAlgorithm = value
 
 
-
-
-
-
 class RedisConnection(UsernamePasswordConnection):
     def __init__(self, redisConfig: RedisConfig):
         super().__init__(redisConfig.host, redisConfig.port, redisConfig.username, redisConfig.password)
@@ -168,28 +164,17 @@ class ED25519KeyStrategy(KeyStrategy):
 
 class Context:
     def __init__(self, keyAlgorithmRef):
-        clazz = globals()[keyAlgorithmRef]
+        clazz = globals()[keyAlgorithmRef] # carica la classe indiriettamente (reflection)
         self._strategy = clazz()
         
     @property
     def strategy(self) -> KeyStrategy:
-        """
-        The Context maintains a reference to one of the Strategy objects. The
-        Context does not know the concrete class of a strategy. It should work
-        with all strategies via the Strategy interface.
-        """
-
         return self._strategy
 
     @strategy.setter
     def strategy(self, strategy: KeyStrategy) -> None:
-        """
-        Usually, the Context allows replacing a Strategy object at runtime.
-        """
-
         self._strategy = strategy
-    
-            
+
     def retrieveKey(self, private_key) -> PKey:
         return self._strategy.getKey(private_key)
     

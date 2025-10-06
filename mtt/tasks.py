@@ -77,7 +77,7 @@ class ExecuteRemoteShellWriteCommandTask(luigi.Task):
                             username=remote_config["username"], pkey=pkey)
                 
                 # recupero il comando
-                print("Executing command", {self.task_config.cmd})
+                print("Executing command", self.task_config.cmd)
 
                 (stdin,stdout,stderr) = ssh.exec_command(self.task_config.cmd)
                 stdout.channel.recv_exit_status()
@@ -140,7 +140,7 @@ class ExecuteRemoteShellReadCommandTask(luigi.Task):
                             username=remote_config["username"], pkey=pkey)
                 
                 # recupero il comando
-                print("Executing command", {self.task_config.cmd})
+                print("Executing command", self.task_config.cmd)
 
                 (stdin,stdout,stderr) = ssh.exec_command(self.task_config.cmd)
                 stdout.channel.recv_exit_status()
