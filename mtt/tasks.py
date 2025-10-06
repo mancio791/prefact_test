@@ -1,5 +1,5 @@
 import luigi
-from .common import TaskConfig, RedisConfig, RedisConnection
+from .common import TaskConfig, RedisConfig, RedisConnection, Context
 import uuid
 import paramiko
 import io
@@ -70,7 +70,8 @@ class ExecuteRemoteShellWriteCommandTask(luigi.Task):
             with paramiko.SSHClient() as ssh:
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 private_key = io.StringIO(remote_config["private_key"])
-                pkey = paramiko.RSAKey.from_private_key(private_key)
+                key_algorithm = remote_config["key_algorithm"]
+                pkey = Context(key_algorithm).retrieveKey(private_key)
                 
                 ssh.connect(remote_config["host"], remote_config["port"], 
                             username=remote_config["username"], pkey=pkey)
@@ -86,6 +87,7 @@ class ExecuteRemoteShellWriteCommandTask(luigi.Task):
                 
         except Exception as e:
             print(f"Error: {e}")
+            raise e
         else:
             print("Removing", self.input().path)
             os.remove(self.input().path)
@@ -131,7 +133,8 @@ class ExecuteRemoteShellReadCommandTask(luigi.Task):
             with paramiko.SSHClient() as ssh:
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
                 private_key = io.StringIO(remote_config["private_key"])
-                pkey = paramiko.RSAKey.from_private_key(private_key)
+                key_algorithm = remote_config["key_algorithm"]
+                pkey = Context(key_algorithm).retrieveKey(private_key)
                 
                 ssh.connect(remote_config["host"], remote_config["port"], 
                             username=remote_config["username"], pkey=pkey)

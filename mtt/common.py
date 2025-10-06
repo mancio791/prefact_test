@@ -1,6 +1,8 @@
 
 import luigi
 import redis
+from paramiko import PKey, RSAKey, Ed25519Key
+from abc import abstractmethod, ABC
 
 
 class RedisConfig(luigi.Config):
@@ -38,10 +40,16 @@ class KeyPairConnection(UsernamePasswordConnection):
     @privateKey.setter
     def privateKey(self, value):
         self._privateKey = value
+    
+    
+    @property
+    def keyAlgorithm(self):
+        return self._keyAlgorithm
 
-    @privateKey.deleter
-    def privateKey(self):
-        del self._privateKey
+    @keyAlgorithm.setter
+    def keyAlgorithm(self, value):
+        self._keyAlgorithm = value
+
 
 
 
@@ -150,3 +158,50 @@ class TaskConfig:
 
 
 
+
+
+class KeyStrategy(ABC):
+    
+    @abstractmethod
+    def getKey(private_key) -> PKey:
+        pass
+
+class RSAKeyStrategy(KeyStrategy):
+    
+    def getKey(self, private_key) -> PKey:
+        return RSAKey.from_private_key(private_key)
+
+class ED25519KeyStrategy(KeyStrategy):
+    
+    def getKey(self, private_key) -> PKey:
+        return Ed25519Key.from_private_key(private_key)
+
+
+class Context:
+    def __init__(self, keyAlgorithmRef):
+        clazz = globals()[keyAlgorithmRef]
+        self._strategy = clazz()
+        
+    @property
+    def strategy(self) -> KeyStrategy:
+        """
+        The Context maintains a reference to one of the Strategy objects. The
+        Context does not know the concrete class of a strategy. It should work
+        with all strategies via the Strategy interface.
+        """
+
+        return self._strategy
+
+    @strategy.setter
+    def strategy(self, strategy: KeyStrategy) -> None:
+        """
+        Usually, the Context allows replacing a Strategy object at runtime.
+        """
+
+        self._strategy = strategy
+    
+            
+    def retrieveKey(self, private_key) -> PKey:
+        return self._strategy.getKey(private_key)
+    
+    
